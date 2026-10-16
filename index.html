@@ -6,21 +6,22 @@
 <title>Trash Sorter &mdash; waste sorting station</title>
 <meta name="description" content="Point a camera at litter and find out which bin it belongs in." />
 <meta name="color-scheme" content="light" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317181A' stroke-width='2'%3E%3Cpath d='M4 6.5h16'/%3E%3Cpath d='M6 6.5 7 19.5h10L18 6.5'/%3E%3Cpath d='M12 9.5v5M9.5 12l2.5 2.5 2.5-2.5' stroke='%231D4ED8'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317181A' stroke-width='2.4'%3E%3Cpath d='M4 8.5v-4h4M20 8.5v-4h-4M4 15.5v4h4M20 15.5v4h-4'/%3E%3Crect x='7.5' y='9.5' width='9' height='5' fill='%231D4ED8' stroke='none'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
 <header class="masthead">
   <div class="wordmark">
-    <!-- The mark is an instruction, not a symbol: a bin with the arrow going in.
-         The arrow is the recycling blue, so the mark carries the same colour
-         coding the whole app runs on. Tested against nine alternatives at
-         19px; three-bins and framed-square versions turned to mush. -->
-    <svg class="wordmark-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-      <path d="M4 6.5h16"/>
-      <path d="M6 6.5 7 19.5h10L18 6.5"/>
-      <path d="M12 9.5v5M9.5 12l2.5 2.5 2.5-2.5" stroke="#1D4ED8"/>
+    <!-- The mark is a camera viewfinder with the answer bar inside it: this app
+         points a camera at an item and returns a colour. That is literally the
+         picture, and no bin icon in existence looks like it. Twelve marks were
+         rendered at 16/19/26/52px before choosing it - a bin-and-arrow was
+         the runner-up, and a tray-with-arrow had to be rejected because it read
+         as a download icon. -->
+    <svg class="wordmark-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" aria-hidden="true">
+      <path d="M4 8.5v-4h4M20 8.5v-4h-4M4 15.5v4h4M20 15.5v4h-4"/>
+      <rect x="7.5" y="9.5" width="9" height="5" fill="#1D4ED8" stroke="none"/>
     </svg>
     <h1>Trash Sorter</h1>
     <p class="wordmark-sub">waste sorting station</p>

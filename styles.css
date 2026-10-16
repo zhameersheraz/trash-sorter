@@ -82,7 +82,7 @@ body{
 .wordmark{display:flex;align-items:baseline;gap:12px;min-width:0}
 
 .wordmark-mark{
-  width:19px;height:19px;flex:none;
+  width:21px;height:21px;flex:none;
   align-self:center;color:var(--ink);
 }
 
