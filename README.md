@@ -133,6 +133,17 @@ Training images were curated from the
 [Recyclable and Household Waste Classification](https://www.kaggle.com/datasets/alistairking/recyclable-and-household-waste-classification)
 dataset by Alistair King (MIT licence), with unusable samples removed by hand.
 
+## Team
+
+**Enjeanearz**
+
+- Tampugao, Zhameer Sheraz
+- Malolot, Brent Jacob
+- Zulieta, Jaypee
+- Abay, Aenon John
+- Pe&ntilde;aranda, Ajay
+- Mosqueda, John Razel
+
 ---
 
 Built by **Enjeanearz**.

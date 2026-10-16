@@ -326,6 +326,19 @@ body{
 }
 .keyline-list .key-note{color:var(--steel)}
 
+/* Credit sits below the fold of the design: present, never competing. */
+.colophon{
+  margin:26px 0 0;padding-top:14px;
+  border-top:1px solid var(--rule);
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:.7rem;color:var(--steel);
+}
+.colophon-group{
+  font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink);
+}
+.colophon-names{letter-spacing:.01em}
+
 /* ---------- responsive ---------- */
 
 @media (max-width:900px){
