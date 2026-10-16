@@ -32,6 +32,10 @@ the bin it belongs in, the way municipal recycling signage already works, so the
 answer is legible before you finish reading it. The bar under the verdict fills
 to the model's confidence in that class's colour.
 
+The mark is a camera viewfinder with the answer bar inside it — which is a
+literal picture of what this app does: you point a camera at an item, and a
+colour comes back.
+
 <details>
 <summary>More screenshots</summary>
 
@@ -90,7 +94,8 @@ Then open <http://localhost:8000> and allow camera access.
 │   ├── weights.bin
 │   └── metadata.json     class labels + image size
 ├── vendor/               vendored libs and fonts (offline support)
-└── docs/                 screenshots used by this README
+├── docs/                 screenshots used by this README
+└── .gitignore
 ```
 
 ---
@@ -112,6 +117,15 @@ snippet, and the mismatch is silent:
 
 A `<video>` element also cannot decode a still image, so photo mode predicts
 from a canvas at the image's intrinsic size.
+
+## Accessibility notes
+
+- The file input is clipped rather than `hidden`, so it stays keyboard-reachable;
+  focus is drawn on the label that stands in for it.
+- The verdict panel updates about five times a second, so it is **not** itself an
+  `aria-live` region. A separate visually-hidden status element announces only
+  when the winning class actually changes, instead of narrating every frame.
+- `prefers-reduced-motion` disables all transitions.
 
 ## Dataset
 
