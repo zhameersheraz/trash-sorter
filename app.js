@@ -66,6 +66,7 @@ const el = {
   binFill: document.getElementById("binFill"),
   bars: document.getElementById("bars"),
   binLegend: document.getElementById("binLegend"),
+  announcer: document.getElementById("announcer"),
 };
 
 let model = null;
@@ -73,7 +74,10 @@ let labels = [];
 let stream = null;
 let rafId = null;
 let lastPredict = 0;
-const PREDICT_INTERVAL_MS = 120;
+let lastAnnounced = "";
+// ~5 predictions a second. Any faster wastes battery on a phone and the
+// library never disposes its output tensor, so the rate is also the leak rate.
+const PREDICT_INTERVAL_MS = 200;
 
 
 /* ------------------------------------------------------------------ */
@@ -103,6 +107,8 @@ function setIdle() {
   el.binName.textContent = "Bin unknown";
   el.bars.innerHTML = "";
   say("Point the camera at an item");
+  lastAnnounced = "";
+  el.announcer.textContent = "";
 }
 
 /* ------------------------------------------------------------------ */
@@ -142,7 +148,14 @@ function render(predictions) {
   // than no answer.
   if (!sourceEl || !predictions || !predictions.length) return;
 
-  const top = predictions[0];
+  // predict() returns classes in TRAINING order, not by score — only
+  // predictTopK() sorts. Reading predictions[0] as the winner showed a 0%
+  // class as the headline result while the real answer sat at 100%.
+  const ranked = predictions
+    .slice()
+    .sort((a, b) => b.probability - a.probability);
+
+  const top = ranked[0];
   const info = BIN_INFO[top.className] || FALLBACK;
   const confident = top.probability >= CONFIDENCE_FLOOR;
   const pct = Math.round(top.probability * 100);
@@ -159,7 +172,7 @@ function render(predictions) {
   el.binFill.style.width = pct + "%";
 
   el.bars.innerHTML = "";
-  predictions.forEach((p, i) => {
+  ranked.forEach((p, i) => {
     const v = Math.round(p.probability * 100);
     const li = document.createElement("li");
     if (i === 0) li.className = "is-top";
@@ -174,6 +187,13 @@ function render(predictions) {
     });
     el.bars.appendChild(li);
   });
+
+  // Announce on change of winner only. Re-announcing every frame would make a
+  // screen reader repeat the same sentence several times a second.
+  if (confident && top.className !== lastAnnounced) {
+    lastAnnounced = top.className;
+    el.announcer.textContent = top.className + ", " + info.bin + " bin";
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -334,6 +354,9 @@ async function init() {
 
   el.fileInput.addEventListener("change", (e) => {
     const file = e.target.files && e.target.files[0];
+    // Clear the value so re-picking the SAME file still fires change.
+    // Otherwise the second pick is silently ignored.
+    e.target.value = "";
     if (!file) return;
     if (model) usePhoto(file);
     else pendingFile = file;

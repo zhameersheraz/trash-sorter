@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Trash Sorter &mdash; waste sorting station</title>
 <meta name="description" content="Point a camera at litter and find out which bin it belongs in." />
+<meta name="color-scheme" content="light" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2317181A' stroke-width='2' stroke-linecap='square'%3E%3Cpath d='M3.5 7.5h17'/%3E%3Cpath d='M9 7.5V4.5h6v3'/%3E%3Cpath d='M5.5 7.5 7 20.5h10l1.5-13'/%3E%3Cpath d='M10 11v6M14 11v6'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -28,7 +30,7 @@
   <section class="bay bay--view" aria-label="Camera view">
     <div class="viewport" id="viewport">
       <video id="cam" playsinline autoplay muted></video>
-      <img id="still" alt="Photo being classified" />
+      <img id="still" alt="" />
       <div class="viewport-idle" id="viewportIdle">
         <p>No item in frame</p>
         <p class="dim">Start the camera, or load a photo</p>
@@ -37,12 +39,15 @@
 
     <div class="controls">
       <button id="toggleCam" class="btn btn--solid" disabled>Start camera</button>
-      <label class="btn btn--line" for="fileInput">Load a photo</label>
+      <!-- Input precedes the label so #fileInput:focus-visible + .btn can draw the
+           focus ring on the visible control. A clipped input on its own is
+           focusable but invisible, which strands keyboard users. -->
       <input id="fileInput" class="sr-only" type="file" accept="image/*" />
+      <label class="btn btn--line" for="fileInput">Load a photo</label>
     </div>
   </section>
 
-  <section class="bay bay--verdict" id="verdict" data-empty="true" aria-live="polite">
+  <section class="bay bay--verdict" id="verdict" data-empty="true">
 
     <div class="verdict-head">
       <p class="field-label">Detected</p>
@@ -51,7 +56,7 @@
 
     <h2 class="verdict-item" id="resultName">Nothing yet</h2>
 
-    <div class="binstrip" id="binStrip">
+    <div class="binstrip">
       <div class="binstrip-track"><div class="binstrip-fill" id="binFill"></div></div>
       <div class="binstrip-meta">
         <span class="binstrip-bin" id="binName">Bin unknown</span>
@@ -69,6 +74,18 @@
   <p class="keyline-title">Bins</p>
   <ul class="keyline-list" id="binLegend"></ul>
 </footer>
+
+<!-- The verdict panel updates ~8x a second, so it cannot itself be the live
+     region or assistive tech will narrate every frame. Announce only when the
+     winning class actually changes. -->
+<p class="sr-only" id="announcer" role="status" aria-live="polite"></p>
+
+<noscript>
+  <p style="max-width:40rem;margin:2rem auto;padding:0 1.5rem;font-family:monospace;line-height:1.6">
+    Trash Sorter needs JavaScript to run the image model in your browser.
+    Enable JavaScript and reload this page.
+  </p>
+</noscript>
 
 <script src="vendor/tf.min.js"></script>
 <script src="vendor/teachablemachine-image.min.js"></script>

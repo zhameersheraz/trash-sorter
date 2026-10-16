@@ -1,0 +1,39 @@
+# ---- Teachable Machine projects can be large; don't commit them twice ----
+# The trained model IS required by the app, so model/ is intentionally NOT
+# ignored here. A second copy of the export is not.
+*.tmproj
+model-*/
+
+# ---- Scratch / test artefacts ----
+_selftest/
+*.tmp.js
+*.log
+
+# ---- Node (not used at runtime, but common in this workspace) ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- OS noise ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Editors ----
+.vscode/
+.idea/
+*.swp
+
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- Python (used only for a local static server) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/

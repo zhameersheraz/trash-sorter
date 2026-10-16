@@ -169,6 +169,14 @@ body{
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 
+/* The real file input is clipped out of view, so focus has to be drawn on
+   the label standing in for it. The input precedes the label for this
+   sibling selector to reach it. */
+#fileInput:focus-visible + .btn--line,
+#fileInput:focus + .btn--line{
+  outline:2px solid var(--ink);outline-offset:2px;
+}
+
 .btn--solid{background:var(--ink);color:var(--surface)}
 .btn--solid:hover:not(:disabled){background:#000}
 
@@ -244,6 +252,9 @@ body{
   list-style:none;margin:30px 0 0;padding:0;
   border-top:1px solid var(--rule);
 }
+
+/* An empty readout must not leave its top rule hanging in space. */
+.readout:empty{margin-top:0;border-top:0}
 
 .readout li{
   display:grid;
