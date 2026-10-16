@@ -3,77 +3,71 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Trash Sorter &mdash; AI Waste Classifier</title>
+<title>Trash Sorter &mdash; waste sorting station</title>
+<meta name="description" content="Point a camera at litter and find out which bin it belongs in." />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <span class="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/>
-      </svg>
-    </span>
-    <div>
-      <h1>Trash Sorter</h1>
-      <p>Point your camera at waste &mdash; get the right bin</p>
-    </div>
+<header class="masthead">
+  <div class="wordmark">
+    <svg class="wordmark-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true">
+      <path d="M3.5 7.5h17"/><path d="M9 7.5V4.5h6v3"/><path d="M5.5 7.5 7 20.5h10l1.5-13"/><path d="M10 11v6M14 11v6"/>
+    </svg>
+    <h1>Trash Sorter</h1>
+    <p class="wordmark-sub">waste sorting station</p>
   </div>
-  <div class="status" id="status" data-state="loading">
-    <span class="dot" aria-hidden="true"></span>
-    <span id="statusText">Loading model&hellip;</span>
-  </div>
+  <p class="status" id="status" data-state="loading">
+    <span class="status-led" aria-hidden="true"></span>
+    <span id="statusText">loading model</span>
+  </p>
 </header>
 
-<main class="layout">
+<main class="frame">
 
-  <section class="stage card">
-    <div class="video-wrap">
+  <section class="bay bay--view" aria-label="Camera view">
+    <div class="viewport" id="viewport">
       <video id="cam" playsinline autoplay muted></video>
       <img id="still" alt="Photo being classified" />
-      <div class="scanner" aria-hidden="true"></div>
-      <div class="stage-empty" id="stageEmpty">
-        <p>Camera is off</p>
-        <small>Start it, or drop in a photo below</small>
+      <div class="viewport-idle" id="viewportIdle">
+        <p>No item in frame</p>
+        <p class="dim">Start the camera, or load a photo</p>
       </div>
     </div>
 
-    <div class="stage-actions">
-      <button id="toggleCam" class="btn btn-primary" disabled>Start camera</button>
-      <label class="btn btn-ghost" for="fileInput">Use a photo</label>
+    <div class="controls">
+      <button id="toggleCam" class="btn btn--solid" disabled>Start camera</button>
+      <label class="btn btn--line" for="fileInput">Load a photo</label>
       <input id="fileInput" class="sr-only" type="file" accept="image/*" />
     </div>
   </section>
 
-  <section class="result card" id="resultCard" data-empty="true">
-    <p class="result-eyebrow">Detected</p>
-    <h2 class="result-name" id="resultName">Waiting for input</h2>
-    <p class="result-sub" id="resultSub">Start the camera or choose a photo</p>
+  <section class="bay bay--verdict" id="verdict" data-empty="true" aria-live="polite">
 
-    <div class="bin">
-      <div class="bin-icon" id="binIcon" aria-hidden="true">?</div>
-      <div class="bin-text">
-        <span class="bin-label">Put it in</span>
-        <strong class="bin-name" id="binName">&mdash;</strong>
-        <span class="bin-note" id="binNote"></span>
+    <div class="verdict-head">
+      <p class="field-label">Detected</p>
+      <p class="verdict-confidence" id="confTop">&mdash;</p>
+    </div>
+
+    <h2 class="verdict-item" id="resultName">Nothing yet</h2>
+
+    <div class="binstrip" id="binStrip">
+      <div class="binstrip-track"><div class="binstrip-fill" id="binFill"></div></div>
+      <div class="binstrip-meta">
+        <span class="binstrip-bin" id="binName">Bin unknown</span>
+        <span class="binstrip-note" id="binNote">Point the camera at an item</span>
       </div>
     </div>
 
-    <div class="confidence">
-      <div class="conf-head">
-        <span>Confidence</span>
-        <strong id="confTop">0%</strong>
-      </div>
-      <ul class="bars" id="bars"></ul>
-    </div>
+    <ul class="readout" id="bars"></ul>
+
   </section>
 
 </main>
 
-<footer class="bins">
-  <h3>The bins</h3>
-  <ul id="binLegend"></ul>
+<footer class="keyline">
+  <p class="keyline-title">Bins</p>
+  <ul class="keyline-list" id="binLegend"></ul>
 </footer>
 
 <script src="vendor/tf.min.js"></script>

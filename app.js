@@ -35,51 +35,37 @@ async function loadModel() {
 }
 
 // Which bin each detected class belongs to, and how to present it.
+// Colour is the information here, not decoration. Each class carries the
+// colour of the bin it belongs in, the way municipal recycling signage works:
+// blue plastics, slate metal, amber paper, green organics, graphite residual.
 const BIN_INFO = {
-  "Plastic Bottle": {
-    bin: "Recycling Bin", colour: "#2563eb", icon: "P",
-    note: "Plastic & bottles",
-  },
-  "Aluminum Can": {
-    bin: "Recycling Bin", colour: "#d97706", icon: "M",
-    note: "Metal cans",
-  },
-  "Paper & Cardboard": {
-    bin: "Recycling Bin", colour: "#ca8a04", icon: "R",
-    note: "Paper & cardboard",
-  },
-  "Food Waste": {
-    bin: "Compost Bin", colour: "#16a34a", icon: "C",
-    note: "Organic & compostable",
-  },
-  "Other": {
-    bin: "General Waste", colour: "#64748b", icon: "G",
-    note: "Non-recyclable",
-  },
+  "Plastic Bottle":    { bin: "Recycling", colour: "#1D4ED8", note: "plastic bottles" },
+  "Aluminum Can":      { bin: "Recycling", colour: "#475569", note: "metal cans" },
+  "Paper & Cardboard": { bin: "Recycling", colour: "#B45309", note: "paper & cardboard" },
+  "Food Waste":        { bin: "Compost",   colour: "#15803D", note: "food scraps" },
+  "Other":             { bin: "General",   colour: "#292524", note: "everything else" },
 };
 
-const FALLBACK = { bin: "Unknown", colour: "#94a3b8", icon: "?", note: "" };
+const FALLBACK = { bin: "Unknown", colour: "#292524", note: "" };
 
 const CONFIDENCE_FLOOR = 0.55; // below this, don't claim a confident answer
 
 const el = {
   status: document.getElementById("status"),
   statusText: document.getElementById("statusText"),
-  stage: document.querySelector(".video-wrap"),
+  viewport: document.getElementById("viewport"),
   cam: document.getElementById("cam"),
   still: document.getElementById("still"),
   toggleCam: document.getElementById("toggleCam"),
   fileInput: document.getElementById("fileInput"),
-  resultCard: document.getElementById("resultCard"),
+  verdict: document.getElementById("verdict"),
+  confTop: document.getElementById("confTop"),
   resultName: document.getElementById("resultName"),
-  resultSub: document.getElementById("resultSub"),
-  binIcon: document.getElementById("binIcon"),
   binName: document.getElementById("binName"),
   binNote: document.getElementById("binNote"),
-  binBox: document.querySelector(".bin"),
-  confTop: document.getElementById("confTop"),
+  binFill: document.getElementById("binFill"),
   bars: document.getElementById("bars"),
-  legend: document.getElementById("binLegend"),
+  binLegend: document.getElementById("binLegend"),
 };
 
 let model = null;
@@ -99,13 +85,33 @@ function setStatus(state, text) {
   el.statusText.textContent = text;
 }
 
+// The one-line explainer under the bin bar. Anything that needs to say
+// something to the user goes here rather than into a separate toast.
+function say(text) {
+  el.binNote.textContent = text;
+}
+
+// Without a live source there is nothing to report. The panel must never
+// keep showing a stale answer, because "Plastic Bottle / 0%" reads as a
+// confident result when it is not one.
+function setIdle() {
+  el.verdict.dataset.empty = "true";
+  el.verdict.style.removeProperty("--signal");
+  el.resultName.textContent = "Nothing yet";
+  el.confTop.textContent = "—";
+  el.binFill.style.width = "0%";
+  el.binName.textContent = "Bin unknown";
+  el.bars.innerHTML = "";
+  say("Point the camera at an item");
+}
+
 /* ------------------------------------------------------------------ */
 /* legend                                                               */
 /* ------------------------------------------------------------------ */
 
 function buildLegend() {
   const seen = new Set();
-  el.legend.innerHTML = "";
+  el.binLegend.innerHTML = "";
 
   labels.forEach((label) => {
     const info = BIN_INFO[label] || FALLBACK;
@@ -114,10 +120,10 @@ function buildLegend() {
 
     const li = document.createElement("li");
     li.innerHTML =
-      '<span class="swatch" style="background:' + info.colour + '"></span>' +
-      '<span><span class="lg-name">' + info.bin + "</span>" +
-      '<span class="lg-bin">' + escapeHtml(info.note) + "</span></span>";
-    el.legend.appendChild(li);
+      '<span class="chip" style="background:' + info.colour + '"></span>' +
+      "<span>" + escapeHtml(info.bin) +
+      ' <span class="key-note">' + escapeHtml(info.note) + "</span></span>";
+    el.binLegend.appendChild(li);
   });
 }
 
@@ -132,47 +138,40 @@ function escapeHtml(s) {
 }
 
 function render(predictions) {
-  if (!predictions || !predictions.length) return;
+  // Guard on the source, not just the prediction: a stale answer is worse
+  // than no answer.
+  if (!sourceEl || !predictions || !predictions.length) return;
 
   const top = predictions[0];
   const info = BIN_INFO[top.className] || FALLBACK;
   const confident = top.probability >= CONFIDENCE_FLOOR;
+  const pct = Math.round(top.probability * 100);
 
-  el.resultCard.dataset.empty = "false";
+  // One signal colour drives the whole verdict bay.
+  el.verdict.dataset.empty = "false";
+  el.verdict.style.setProperty("--signal", info.colour);
+
   el.resultName.textContent = top.className;
-  el.resultSub.textContent = confident
-    ? Math.round(top.probability * 100) + "% sure"
-    : "Low confidence - try holding it closer and better lit";
+  el.confTop.textContent = pct + "%";
 
-  el.binIcon.textContent = info.icon;
-  el.binIcon.style.background = info.colour + "22";
-  el.binIcon.style.color = info.colour;
-  el.binName.textContent = info.bin;
-  el.binNote.textContent = info.note;
-  el.binBox.style.background = info.colour + "0f";
-  el.binBox.style.borderColor = info.colour + "33";
-
-  el.confTop.textContent = Math.round(top.probability * 100) + "%";
-  el.confTop.style.color = info.colour;
+  el.binName.textContent = confident ? info.bin : "Uncertain";
+  el.binNote.textContent = confident ? info.note : "hold it closer, better lit";
+  el.binFill.style.width = pct + "%";
 
   el.bars.innerHTML = "";
-  predictions.forEach((p) => {
-    const pct = Math.round(p.probability * 100);
-    const colour = (BIN_INFO[p.className] || FALLBACK).colour;
-
+  predictions.forEach((p, i) => {
+    const v = Math.round(p.probability * 100);
     const li = document.createElement("li");
+    if (i === 0) li.className = "is-top";
     li.innerHTML =
-      '<div class="bar-label"><span>' + escapeHtml(p.className) + "</span>" +
-      '<span class="pct">' + pct + "%</span></div>" +
-      '<div class="track"><div class="fill"></div></div>';
-
-    const fill = li.querySelector(".fill");
-    // set width on next frame so the CSS transition actually runs
+      '<span class="rd-name">' + escapeHtml(p.className) + "</span>" +
+      '<span class="rd-pct">' + v + "%</span>" +
+      '<span class="rd-track"><span class="rd-fill"></span></span>';
+    const fill = li.querySelector(".rd-fill");
     requestAnimationFrame(() => {
-      fill.style.width = pct + "%";
-      fill.style.background = colour;
+      fill.style.width = v + "%";
+      fill.style.background = i === 0 ? info.colour : "";
     });
-
     el.bars.appendChild(li);
   });
 }
@@ -184,8 +183,7 @@ function render(predictions) {
 async function startCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     setStatus("error", "Camera not supported here");
-    el.resultSub.textContent =
-      "This browser blocks camera access. Use the “Use a photo” button instead.";
+    say("camera blocked here — load a photo instead");
     return;
   }
 
@@ -199,8 +197,8 @@ async function startCamera() {
     await el.cam.play();
 
     sourceEl = el.cam;
-    el.stage.classList.add("live");
-    el.stage.classList.remove("photo");
+    el.viewport.classList.add("is-live");
+    el.viewport.classList.remove("photo");
     el.toggleCam.textContent = "Stop camera";
     setStatus("ready", "Camera live");
 
@@ -209,9 +207,9 @@ async function startCamera() {
   } catch (err) {
     const denied = err && (err.name === "NotAllowedError" || err.name === "SecurityError");
     setStatus("error", denied ? "Camera blocked" : "Camera unavailable");
-    el.resultSub.textContent = denied
-      ? "Camera permission was denied. Allow it in the address bar, or use “Use a photo”."
-      : "No camera found. Use the “Use a photo” button instead.";
+    say(denied
+      ? "allow camera in the address bar, or load a photo"
+      : "no camera found — load a photo instead");
   }
 }
 
@@ -226,9 +224,10 @@ function stopCamera() {
 
   el.cam.srcObject = null;
   if (sourceEl === el.cam) sourceEl = null;
-  el.stage.classList.remove("live", "photo");
+  el.viewport.classList.remove("is-live", "photo");
   el.toggleCam.textContent = "Start camera";
   setStatus("ready", "Camera off");
+  setIdle();
 }
 
 /* ------------------------------------------------------------------ */
@@ -242,7 +241,7 @@ let lastError = null;
 
 function clearPhoto() {
   el.still.removeAttribute("src");
-  el.stage.classList.remove("photo");
+  el.viewport.classList.remove("photo");
   if (sourceEl === el.still) sourceEl = null;
 }
 
@@ -262,7 +261,7 @@ function usePhoto(file) {
     canvas.getContext("2d").drawImage(el.still, 0, 0, canvas.width, canvas.height);
 
     sourceEl = canvas;
-    el.stage.classList.add("live", "photo");
+    el.viewport.classList.add("is-live", "photo");
     el.toggleCam.textContent = "Start camera";
     setStatus("ready", "Photo loaded");
     loop();
@@ -308,7 +307,7 @@ function loop() {
       // A silently blank result looks like "the model is broken". Report it.
       if (lastError !== e.message) {
         lastError = e.message;
-        el.resultSub.textContent = "Prediction failed: " + e.message;
+        say("prediction failed: " + e.message);
         console.error("prediction failed:", e);
       }
       return;
@@ -351,6 +350,7 @@ async function init() {
     setStatus("ready", "Model ready");
     el.toggleCam.disabled = false;
     buildLegend();
+    setIdle();
 
     if (pendingFile) {
       const file = pendingFile;
@@ -359,9 +359,7 @@ async function init() {
     }
   } catch (err) {
     setStatus("error", "Model failed to load");
-    el.resultSub.textContent =
-      "Could not load ./model/. Make sure this page is served over http://localhost " +
-      "and the model folder sits next to index.html. (" + err.message + ")";
+    say("model folder missing — check it sits next to index.html (" + err.message + ")");
   }
 }
 
