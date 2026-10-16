@@ -77,7 +77,7 @@ body{
 .wordmark{display:flex;align-items:baseline;gap:12px;min-width:0}
 
 .wordmark-mark{
-  width:20px;height:20px;flex:none;
+  width:19px;height:19px;flex:none;
   align-self:center;color:var(--ink);
 }
 
