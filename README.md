@@ -168,6 +168,53 @@ Training images were curated from the
 [Recyclable and Household Waste Classification](https://www.kaggle.com/datasets/alistairking/recyclable-and-household-waste-classification)
 dataset by Alistair King (MIT licence), with unusable samples removed by hand.
 
+What each class actually contains:
+
+| Class | Images | Source sub-categories |
+|---|---|---|
+| Plastic Bottle | 150 | 113 water bottles, 37 soda bottles |
+| Aluminum Can | 150 | 150 soda cans |
+| Paper & Cardboard | 136 | 60 newspaper, 53 cardboard boxes, 23 magazine covers |
+| Food Waste | 156 | 83 food waste, 45 eggshells, 15 coffee grounds, 13 tea bags |
+| Other | 225 | 60 styrofoam cups, 53 plastic cutlery, 45 straws, 37 styrofoam containers, 30 plastic trash bags |
+
+96 images were quarantined during curation and are not in the training set:
+71 outright unusable samples (retail tea boxes, text infographics, webpage
+screenshots), and 25 more identified later — 12 magazine covers dominated by a
+large human face (which teach the model that a face is paper) and 13 remaining
+text infographics in Food Waste. Those 25 are removed from the staging folders
+and will be dropped in the next training run.
+
+## Known limitations
+
+**Every training image is an isolated product shot on a plain background.** The
+model has never seen an object in a room, in a hand, or on a table. That has a
+measurable effect: when a real object is cut out and pasted onto a real
+background, the model's answer depends heavily on how much of the frame the
+object fills.
+
+| Object | Isolated photo | Same object on a real wall |
+|---|---|---|
+| Water bottle | Plastic Bottle 99% | Plastic Bottle 100% (fills frame) / 53% (small in frame) |
+| Food waste | Food Waste 100% | Food Waste 100% |
+| Styrofoam cup | Other 100% | Other 100% |
+| Cardboard box | Paper & Cardboard 100% | Paper & Cardboard 79% (fills frame) / Food Waste 68% (small in frame) |
+
+In other words: **fill the frame with the item.** The "Uncertain" verdict is
+there for the cases where the model is genuinely unsure — a large flat
+background with a small object in it produces a confident but wrong answer, and
+that is the model's weakest spot.
+
+**The "Other" class is not a true catch-all.** It was trained on single-use
+plastics (cups, cutlery, straws, bags), so "Other" means "single-use plastics",
+not "everything else". Anything outside the four specific classes is pushed
+into it whether or not it belongs.
+
+**There is no "not waste" class.** A person in frame has to be forced into one
+of the five, and the model will pick whichever is closest — a face against a
+tan wall comes out as Paper & Cardboard. The confidence floor catches this and
+answers "Uncertain" instead of naming a bin.
+
 ## Team
 
 **Enjeanearz**
