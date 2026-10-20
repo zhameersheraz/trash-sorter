@@ -38,8 +38,14 @@ async function loadModel() {
 // Colour is the information here, not decoration. Each class carries the
 // colour of the bin it belongs in, the way municipal recycling signage works:
 // blue plastics, slate metal, amber paper, green organics, graphite residual.
+//
+// Both the current labels and the wider material-stream labels are mapped, so
+// the app keeps working across a model swap: "Plastic Bottle" / "Aluminum Can"
+// (v1) and "Plastic" / "Metal" (v2) resolve to the same bins.
 const BIN_INFO = {
+  "Plastic":           { bin: "Recycling", colour: "#1D4ED8", note: "plastics" },
   "Plastic Bottle":    { bin: "Recycling", colour: "#1D4ED8", note: "plastic bottles" },
+  "Metal":             { bin: "Recycling", colour: "#475569", note: "metal cans" },
   "Aluminum Can":      { bin: "Recycling", colour: "#475569", note: "metal cans" },
   "Paper & Cardboard": { bin: "Recycling", colour: "#B45309", note: "paper & cardboard" },
   "Food Waste":        { bin: "Compost",   colour: "#15803D", note: "food scraps" },
