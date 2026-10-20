@@ -215,6 +215,38 @@ of the five, and the model will pick whichever is closest — a face against a
 tan wall comes out as Paper & Cardboard. The confidence floor catches this and
 answers "Uncertain" instead of naming a bin.
 
+### Dataset v2 (staged, retrain pending)
+
+The source dataset this project uses is much larger than the 817 images above.
+It ships **30 sub-categories x 500 images = 15,000 photos**, and every
+sub-category is split into `default/` (studio shots) and `real_world/` (the
+object in an actual scene). The v1 training set used only the studio half of
+8 sub-categories, which is exactly why the model reads backgrounds instead of
+objects.
+
+A v2 training set has been curated and staged, switching to **material
+streams** so the bin mapping is honest:
+
+| Class | Images | Sub-categories |
+|---|---|---|
+| Plastic | 495 | 9 kinds of plastic packaging, bottles, cutlery, straws, bags |
+| Metal | 500 | soda cans, food cans, steel cans, aerosol cans |
+| Paper & Cardboard | 500 | cardboard boxes and packaging, newspaper, office paper, paper cups |
+| Food Waste | 500 | food waste, eggshells, coffee grounds, tea bags |
+| Other | 498 | glass bottles, jars and cosmetic containers, styrofoam, shoes |
+
+Changes from v1:
+
+- **Half of every class is now `real_world`** — objects in rooms, on floors,
+  in hands — so the camera path has seen real backgrounds.
+- **Magazines were dropped entirely.** Their covers are dominated by large
+  human faces, which taught the model that a face is paper.
+- **Clothing was dropped.** It is scraped fashion photography full of models.
+- **Infographics and webpage screenshots** were filtered out of Food Waste.
+- **The classes are now materials**, so a plastic cup goes to Recycling
+  instead of "General", and "Other" really is everything else.
+
+
 ## Team
 
 **Enjeanearz**
