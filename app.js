@@ -208,13 +208,27 @@ async function startCamera() {
   }
 
   try {
+    // "environment" (rear camera) is a preference, not a requirement: on a
+    // laptop there is no rear camera and the browser falls back to the
+    // built-in one. A hard constraint would fail outright there.
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment", width: { ideal: 640 } },
+      video: { facingMode: { ideal: "environment" }, width: { ideal: 640 } },
       audio: false,
     });
 
     el.cam.srcObject = stream;
     await el.cam.play();
+
+    // A browser hands back the raw camera frame, which is NOT mirrored.
+    // Every other camera app mirrors its preview, so a front-facing feed
+    // is flipped here to match. A rear camera is left alone: it already
+    // shows the scene the way the world does. The flip is CSS on the
+    // <video> only, and drawImage ignores CSS transforms, so the model
+    // still classifies the true, un-mirrored frame.
+    const track = stream.getVideoTracks()[0];
+    const facing =
+      track && track.getSettings ? track.getSettings().facingMode : null;
+    el.viewport.classList.toggle("mirror", facing !== "environment");
 
     sourceEl = el.cam;
     el.viewport.classList.add("is-live");
@@ -244,7 +258,7 @@ function stopCamera() {
 
   el.cam.srcObject = null;
   if (sourceEl === el.cam) sourceEl = null;
-  el.viewport.classList.remove("is-live", "photo");
+  el.viewport.classList.remove("is-live", "photo", "mirror");
   el.toggleCam.textContent = "Start camera";
   setStatus("ready", "Camera off");
   setIdle();

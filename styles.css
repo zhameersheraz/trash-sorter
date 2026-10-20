@@ -150,6 +150,11 @@ body{
 .viewport.is-live video,
 .viewport.is-live img{opacity:1}
 .viewport.is-live.photo video{display:none}
+/* Mirror the live preview so it reads like a mirror, the way every other
+   camera app shows it. CSS transforms are ignored by drawImage, so this
+   flips the picture on screen only -- the model still sees the real frame.
+   Photos are never mirrored. */
+.viewport.mirror video{transform:scaleX(-1)}
 
 .viewport-idle{
   position:absolute;inset:0;
