@@ -48,7 +48,12 @@ const BIN_INFO = {
 
 const FALLBACK = { bin: "Unknown", colour: "#292524", note: "" };
 
-const CONFIDENCE_FLOOR = 0.55; // below this, don't claim a confident answer
+// Measured on a 150-image sample of the dataset (see README "Accuracy"):
+// 147/150 predictions landed at 95%+ confidence and were all correct; the
+// single wrong high-scoring answer sat at 70%, the other at 39%. Every
+// correct answer was 85% or above, so a 0.75 floor keeps all real hits and
+// turns "confidently wrong" into "Uncertain" instead of naming a bin.
+const CONFIDENCE_FLOOR = 0.75; // below this, don't claim a confident answer
 
 const el = {
   status: document.getElementById("status"),

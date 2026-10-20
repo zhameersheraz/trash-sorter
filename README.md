@@ -62,6 +62,41 @@ TensorFlow.js and the Teachable Machine library are **vendored into
 [`vendor/`](vendor)**, including both webfonts, so the app works with no
 internet connection — useful for a classroom demo on unreliable wifi.
 
+## Accuracy
+
+The exported model was re-run in the browser over a 150-image sample of the
+dataset (30 per class) through the exact same pipeline the app uses — the same
+224-pixel centre crop and the same `predict()` call.
+
+| True class | Correct | Accuracy | Mean confidence |
+|---|---|---|---|
+| Plastic Bottle | 30/30 | 100% | 100% |
+| Aluminum Can | 30/30 | 100% | 100% |
+| Other | 30/30 | 100% | 100% |
+| Food Waste | 29/30 | 97% | 99% |
+| Paper & Cardboard | 29/30 | 97% | 98% |
+| **Overall** | **148/150** | **98.7%** | — |
+
+**This is a sample of the images the model was trained on, so it is
+optimistic** — it measures how well the model fits its own training data, not
+how it generalises to new objects. The honest test is a live camera pointed at
+real litter, which is what the demo does.
+
+The confidence numbers are what the app is built around:
+
+| Model confidence | Images | Correct |
+|---|---|---|
+| 95% – 100% | 147 | 147 |
+| 85% – 95% | 1 | 1 |
+| 70% – 85% | 1 | 0 |
+| below 70% | 1 | 0 |
+
+Every correct answer came in at **85% confidence or above**; both wrong answers
+came in below 75%. The app therefore uses a **0.75 confidence floor**: below
+that it says **Uncertain** instead of naming a bin, so it never tells you to
+recycle something it is only guessing about. That threshold is set from these
+measurements, not by taste.
+
 ## Stack
 
 - Google Teachable Machine (model training + TensorFlow.js export)
